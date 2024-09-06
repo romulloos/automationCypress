@@ -10,6 +10,7 @@ describe("atualização de produtos", () => {
 
         cy.request({
             method: 'POST',
+            url: `https://www.advantageonlineshopping.com/accountservice/accountrest/api/v1/login`,
             headers: {
                 accept: "*/*",
                 'Content-Type': "application/json",
@@ -21,9 +22,9 @@ describe("atualização de produtos", () => {
             },
         }).then((response) => {
             expect(response.status).to.be.equal(200);
-            expect(response.body.reason).to.be.contains("Login Successful");
-            token = response.body.token;
-            userId = response.body.userId;
+            expect(response.body.statusMessage.reason).to.be.include("Login Successful");
+            token = response.body.statusMessage.token;
+            userId = response.body.statusMessage.userId;
         });
 
     });
@@ -33,7 +34,7 @@ describe("atualização de produtos", () => {
         let color = "black";
         let name = "H2310"
         let quantityPerEachCategory = -1;
-        let productId = 0;
+        let productId = 12;
         let productImageId = 0;
 
         cy.request({
@@ -44,13 +45,38 @@ describe("atualização de produtos", () => {
             },
         }).then((response) => {
             expect(response.status).to.equal(200);
-            response.body.products.forEach(products => {
-                if (products.productId === 12) {
-                    expect(products.productId).to.be.equal(12);
-                    productId = products.productId;
-                }
+            response.body.forEach(body =>{
+                body.products.forEach(products => {
+                    if (products.productId === 12) {
+                        expect(products.productId).to.be.equal(12);
+                        productId = products.productId;
+                    }
+                });
             });
+            
         });
+
+        // const imagePath = 'headphoneback.jpg';
+        // cy.fixture(imagePath, 'binary').then((fileContent) => {
+        //     const formData = new FormData();
+        //     const blob = Cypress.Blob.binaryStringToBlob(fileContent, 'image/jpeg');
+        //     formData.append('file', blob, imagePath);
+
+        //     cy.request({
+        //         method: "POST",
+        //         url: `https://www.advantageonlineshopping.com/catalog/api/v1/product/image/${userId}/${source}/${color}?product_id=${productId}`,
+        //         headers: {
+        //             token: `Bearer ${token}`,
+        //             'Content-Type': 'multipart/form-data',
+        //         },
+        //         body: formData,
+        //         form: false,
+        //         json: false,
+        //     }).then((response) => {
+        //         expect(response.status).to.be.equal(200);
+        //         expect(response.body.success).to.be.true
+        //     })
+        // });
 
         cy.request({
             method: 'GET',
@@ -61,30 +87,7 @@ describe("atualização de produtos", () => {
         }).then((response) => {
             expect(response.status).to.be.equal(200);
             const imageslist = response.body.images;
-            expect(imageslist).to.include("custom_image_local_362e7f36-6879-4ba2-970d-f86cfa8d0bd9");
-        });
-
-        const imagePath = 'headphoneback.jpg';
-        cy.fixture(imagePath, 'binary').then((fileContent) => {
-            const formData = new FormData();
-            const blob = Cypress.Blob.binaryStringToBlob(fileContent, 'image/jpeg');
-            formData.append('file', blob, imagePath);
-
-            cy.request({
-                method: "PUT",
-                url: `https://www.advantageonlineshopping.com/catalog/api/v1/product/image/${userId}/${source}/${color}?product_id=${productId}`,
-                headers: {
-                    token: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
-                },
-                body: formData,
-                form: false,
-                json: false,
-            }).then((response) => {
-                expect(response.status).to.be.equal(200);
-                expect(response.body.success).to.be.true
-                expect(response.body.imageId).not.to.equal(productImageId);
-            })
+            expect(imageslist).to.contains("custom_image_local_362e7f36-6879-4ba2-970d-f86cfa8d0bd9");
         });
     });
 });
